@@ -479,13 +479,9 @@ async def on_file_to_photo(event):
         "usage": "{tr}gif quality ; fps(frames per second)",
     },
 )
-async def _(event):  # sourcery no-metrics
+async def _(event):    # sourcery no-metrics
     "Converts Given animated sticker to gif"
-    input_str = event.pattern_match.group(1)
-    if not input_str:
-        quality = None
-        fps = None
-    else:
+    if input_str := event.pattern_match.group(1):
         loc = input_str.split(";")
         if len(loc) > 2:
             return await edit_delete(
@@ -521,6 +517,9 @@ async def _(event):  # sourcery no-metrics
                 quality = loc[0].strip()
             else:
                 return await edit_delete(event, "Use quality of range 0 to 721")
+    else:
+        quality = None
+        fps = None
     catreply = await event.get_reply_message()
     cat_event = base64.b64decode("QUFBQUFGRV9vWjVYVE5fUnVaaEtOdw==")
     if not catreply or not catreply.media or not catreply.media.document:
@@ -591,19 +590,18 @@ async def _(event):
     else:
         end = datetime.now()
         ms = (end - start).seconds
-        await event.edit(
-            "Downloaded to `{}` in {} seconds.".format(downloaded_file_name, ms)
-        )
+        await event.edit(f"Downloaded to `{downloaded_file_name}` in {ms} seconds.")
         new_required_file_name = ""
         new_required_file_caption = ""
         command_to_run = []
         voice_note = False
         supports_streaming = False
         if input_str == "voice":
-            new_required_file_caption = "voice_" + str(round(time.time())) + ".opus"
+            new_required_file_caption = f"voice_{str(round(time.time()))}.opus"
             new_required_file_name = (
-                Config.TMP_DOWNLOAD_DIRECTORY + "/" + new_required_file_caption
+                f"{Config.TMP_DOWNLOAD_DIRECTORY}/{new_required_file_caption}"
             )
+
             command_to_run = [
                 "ffmpeg",
                 "-i",
@@ -621,10 +619,11 @@ async def _(event):
             voice_note = True
             supports_streaming = True
         elif input_str == "mp3":
-            new_required_file_caption = "mp3_" + str(round(time.time())) + ".mp3"
+            new_required_file_caption = f"mp3_{str(round(time.time()))}.mp3"
             new_required_file_name = (
-                Config.TMP_DOWNLOAD_DIRECTORY + "/" + new_required_file_caption
+                f"{Config.TMP_DOWNLOAD_DIRECTORY}/{new_required_file_caption}"
             )
+
             command_to_run = [
                 "ffmpeg",
                 "-i",
@@ -685,7 +684,7 @@ async def _(event):
         "examples": ["{tr}itog s", "{tr}itog -s"],
     },
 )
-async def pic_gifcmd(event):  # sourcery no-metrics
+async def pic_gifcmd(event):    # sourcery no-metrics
     "To convert replied image or sticker to gif"
     reply = await event.get_reply_message()
     mediatype = media_type(reply)
@@ -697,7 +696,7 @@ async def pic_gifcmd(event):  # sourcery no-metrics
             "__Reply to photo or sticker to make it gif. Animated sticker is not supported__",
         )
     args = event.pattern_match.group(1)
-    args = "i" if not args else args.replace("-", "")
+    args = args.replace("-", "") if args else "i"
     catevent = await edit_or_reply(event, "__🎞 Making Gif from the relied media...__")
     imag = await _cattools.media_to_pic(event, reply, noedits=True)
     if imag[1] is None:

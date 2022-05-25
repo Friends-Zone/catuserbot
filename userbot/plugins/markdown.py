@@ -70,7 +70,7 @@ def parse_b_meme(m):
 
 
 def parse_subreddit(m):
-    text = "/" + m.group(3)
+    text = f"/{m.group(3)}"
     entity = MessageEntityTextUrl(
         offset=m.start(2), length=len(text), url=f"https://reddit.com{text}"
     )
@@ -136,9 +136,7 @@ def parse(message, old_entities=None):
 
             text, entity = parser(match)
 
-            # Shift old entities after our current position (so they stay in place)
-            shift = len(text) - len(match[0])
-            if shift:
+            if shift := len(text) - len(match[0]):
                 for e in old_entities[after:]:
                     e.offset += shift
 
